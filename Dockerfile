@@ -2,17 +2,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy everything
-COPY . .
+# Copy solution and project files
+COPY *.sln .
+COPY Interior_API/*.csproj ./Interior_API/
 
-# Find your project folder and restore
-WORKDIR /src/YourProjectFolderName
+# Restore as distinct layers
 RUN dotnet restore
 
-# Build and publish
+# Copy the entire project
+COPY . .
+
+WORKDIR /src/Interior_API
 RUN dotnet publish -c Release -o /app/publish
 
-# Use a smaller runtime image
+# Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
